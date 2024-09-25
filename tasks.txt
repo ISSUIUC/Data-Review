@@ -3,4 +3,4 @@ Goals(off what we said in the meeting, just so we know all the stuff is working)
 * Turn csv into pandas dataframe
 * build initial tools: increasing, decreasing, stagnant, for columns
 * create interface
-* ???
+* best fit line, r value
