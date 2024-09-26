@@ -22,8 +22,13 @@ def check_trend(column, trend):
 def main():
     # Get CSV file name from the user
     csv_file = input("Enter the name of the CSV file: ")
+    #attempt to ensure continuity across OSs
+    file_path = os.path.join(os.getcwd(), csv_file)
+
+    absolute_path = os.path.abspath(file_path)
+
     print('cwd:', os.getcwd())
-    print('file path = ', os.getcwd + csv_file  )
+    print('Absolute file path:', absolute_path)
 
 
     try:
@@ -33,30 +38,58 @@ def main():
         return
 
     #outputs column names
-    print("\nColumns available in the CSV:")
-    print(df.columns.tolist())
+    print("\nColumns available in the CSV: format [name, index]")
+    columnList = df.columns.tolist()
+    columnListIndexed = []
+    columnListIndexes = []
+    counter = 0
+    for column in columnList:
+        columnListIndexed.append(column + " " + str(counter))
+        columnListIndexes.append(str(counter))
+        counter += 1
+    print(columnListIndexed)
+        
+
+    #while continuing = 1, continues to ask user 
+    continuing = 1
+
+    while continuing:
 
     # Ask the user to select a column
-    column_name = input("\nEnter the column name to verify: ")
+        column_name = input("\nEnter the column name or index to verify: ")
 
-    # Check if the column exists
-    if column_name not in df.columns:
-        print("Invalid column name. Please try again.")
-        return
+        # Check if the column exists
+        while column_name not in df.columns and column_name not in columnListIndexes:
+            print("Invalid column name or index. Please try again.")
+            column_name = input("\nEnter the column name or index to verify: ")
 
-    # Ask the user to choose the trend
-    trend = input("What trend would you like to check (ascending, descending, constant)? ").lower()
+        # Ask the user to choose the trend
+        trend = input("What trend would you like to check (ascending, descending, constant)? ").lower()
 
-    if trend not in ['ascending', 'descending', 'constant']:
-        print("Invalid trend option. Please enter either 'ascending', 'descending', or 'constant'.")
-        return
+        while trend not in ['ascending', 'descending', 'constant']:
+            print("Invalid trend option. Please enter either 'ascending', 'descending', or 'constant'.")
+            trend = input("What trend would you like to check (ascending, descending, constant)? ").lower()
 
-    # Get the column data (assuming numeric or comparable data types)
-    column_data = df[column_name].values
+        # Get the column data (assuming numeric or comparable data types)
+        if column_name in df.columns:
+            column_data = df[column_name].values
+        else: #finds column at given index, gets values
+            column_data = df.iloc[:, int(column_name)].values
 
-    # Check the trend and print the result
-    result = check_trend(column_data, trend)
-    print(result)
+        # Check the trend and print the result
+        result = check_trend(column_data, trend)
+        print(result)
+
+        y_n = input("Would you like to verify another column (y or n): ").lower()
+
+        # Validate input to ensure it's either 'y' or 'n'
+        while y_n != "y" and y_n != "n":
+            y_n = input("\nPlease enter 'y' or 'n': ").lower()
+
+        # Exit if user chooses 'n'
+        if y_n == "n":
+            continuing = 0
+    
 
 if __name__ == "__main__":
     main()
