@@ -1,0 +1,92 @@
+import tkinter as tk
+from tkinter import filedialog, messagebox, StringVar, Listbox, MULTIPLE
+import pandas as pd
+import plotly.graph_objects as go
+
+# Function to load the CSV and create dropdowns and listbox for columns
+def load_csv():
+    # Ask the user to select a CSV file
+    file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
+    
+    if file_path:
+        try:
+            # Read the CSV file
+            global data
+            data = pd.read_csv(file_path)
+            
+            # Clear previous widgets if any
+            clear_widgets()
+
+            # Create dropdown menu for selecting the time column (X-axis)
+            column_names = data.columns.tolist()
+            selected_time_column.set(column_names[0])  # Set default time column
+            
+            # Dropdown for time column selection
+            time_dropdown_label = tk.Label(root, text="Select Time Column:")
+            time_dropdown_label.pack(pady=5)
+            time_dropdown_menu = tk.OptionMenu(root, selected_time_column, *column_names)
+            time_dropdown_menu.pack(pady=10)
+
+            # Listbox for selecting multiple data columns (Y-axis)
+            data_listbox_label = tk.Label(root, text="Select Data Columns (Y-axis):")
+            data_listbox_label.pack(pady=5)
+            data_listbox.pack(pady=10)
+            
+            # Populate the listbox with column names
+            for column in column_names:
+                data_listbox.insert(tk.END, column)
+
+            # Add a button to plot the selected columns
+            plot_button = tk.Button(root, text="Plot Selected Columns", command=plot_selected_columns)
+            plot_button.pack(pady=20)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to load file\n{e}")
+
+# Function to clear previous widgets
+def clear_widgets():
+    for widget in root.winfo_children():
+        if widget not in (load_button,):
+            widget.pack_forget()
+
+# Function to plot the selected columns using Plotly
+def plot_selected_columns():
+    time_col = selected_time_column.get()
+    selected_data_cols = [data_listbox.get(i) for i in data_listbox.curselection()]
+    
+    if time_col in data.columns and all(col in data.columns for col in selected_data_cols):
+        # Create a plotly figure
+        fig = go.Figure()
+
+        # Add each selected data column as a trace to the plot
+        for col in selected_data_cols:
+            fig.add_trace(go.Scatter(x=data[time_col], y=data[col], mode='lines+markers', name=col))
+
+        # Update layout with titles and axis labels
+        fig.update_layout(
+            title=f"Selected Columns vs {time_col}",
+            xaxis_title=time_col,
+            yaxis_title="Values",
+            showlegend=True
+        )
+        
+        # Show the plot in the default browser
+        fig.show()
+    else:
+        messagebox.showerror("Error", "Invalid column selection.")
+
+# Initialize the main window
+root = tk.Tk()
+root.title("CSV Viewer with Interactive Plotting")
+root.geometry("600x500")
+
+# Initialize variables
+selected_time_column = StringVar(root)
+data_listbox = Listbox(root, selectmode=MULTIPLE, height=10, width=50)
+
+# Create a button to load CSV file
+load_button = tk.Button(root, text="Load CSV File", command=load_csv)
+load_button.pack(pady=10)
+
+# Run the application
+root.mainloop()
