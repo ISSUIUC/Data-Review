@@ -11,6 +11,8 @@ RULES = over certain time frame either data always within(greaterthan/equal to/l
 OR data always fufills some relationship to the next data OR some maximal std  deviation
 Need to be able  to define multiple  rules
 If rule broken, specifiy which rule broken and where(time wise)
+
+show which csv currently operating on, be able to change out and in(maybe)
 """
 
 #RULE FORMAT
