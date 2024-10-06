@@ -1,0 +1,14 @@
+Threshhold ex:
+
+TH 0 - 10.4 s < 3 s > 2 s = NA
+checks from 0-10.4 seconds if s(sample) less than 3 greater than 2
+
+CP 0 - 10.4 s < sn s > na s = NA
+CP 0 - 10.4 s < NA s > NA s = 1 / 3 * sn
+CP 0 - 10.4 s < NA s > sn / 3 s = NA
+
+checks from 0 - 10.4 seconds  1 is s(sample) less than sn(next sample)  2 is s = 1/3 sn 3 is s greater than sn / 3
+
+EN 0 - 10.4 s in std_dev
+checks from 0 - 10.4 seconds s(sample) within 1 deviation of mean
+
