@@ -2,10 +2,12 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, StringVar, Listbox, MULTIPLE
 import pandas as pd
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 # Function to load the CSV and create dropdowns and listbox for columns
 def load_csv():
     # Ask the user to select a CSV file
+    clear_widgets()
     file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
     
     if file_path:
@@ -31,8 +33,13 @@ def load_csv():
             data_listbox_label = tk.Label(root, text="Select Data Columns (Y-axis):")
             data_listbox_label.pack(pady=5)
             data_listbox.pack(pady=10)
+            global displayIndivid
+            displayIndivid = tk.IntVar()
+            c1 = tk.Checkbutton(root, text='Display Data Invidvidally?',variable=displayIndivid, onvalue=1, offvalue=0)
+            c1.pack(pady =20)
             
             # Populate the listbox with column names
+            data_listbox.delete(0,tk.END)
             for column in column_names:
                 data_listbox.insert(tk.END, column)
 
@@ -56,21 +63,32 @@ def plot_selected_columns():
     
     if time_col in data.columns and all(col in data.columns for col in selected_data_cols):
         # Create a plotly figure
-        fig = go.Figure()
+        print(displayIndivid)
+        if displayIndivid == 0:
+            
+            fig = go.Figure()
 
-        # Add each selected data column as a trace to the plot
-        for col in selected_data_cols:
-            fig.add_trace(go.Scatter(x=data[time_col], y=data[col], mode='lines+markers', name=col))
+            # Add each selected data column as a trace to the plot
+            for col in selected_data_cols:
+                fig.add_trace(go.Scatter(x=data[time_col], y=data[col], mode='lines+markers', name=col))
 
-        # Update layout with titles and axis labels
-        fig.update_layout(
-            title=f"Selected Columns vs {time_col}",
-            xaxis_title=time_col,
-            yaxis_title="Values",
-            showlegend=True
-        )
-        
-        # Show the plot in the default browser
+            # Update layout with titles and axis labels
+            fig.update_layout(
+                title=f"Selected Columns vs {time_col}",
+                xaxis_title=time_col,
+                yaxis_title="Values",
+                showlegend=True
+            )
+            
+        elif displayIndivid == 1:
+            fig = make_subplots(rows = len(selected_data_cols),cols = 1)
+            rowCounter = 1
+            for col in selected_data_cols:
+                fig.add_trace(go.Scatter(x=data[time_col],y = data[col]),row = rowCounter,col = 1)
+                rowCounter += 1
+            fig.update_layout(height = rowCounter * 300, width = 800, title = "Individually plotted data")
+
+            # Show the plot in the default browser
         fig.show()
     else:
         messagebox.showerror("Error", "Invalid column selection.")
@@ -83,6 +101,9 @@ root.geometry("600x500")
 # Initialize variables
 selected_time_column = StringVar(root)
 data_listbox = Listbox(root, selectmode=MULTIPLE, height=10, width=50)
+
+
+
 
 # Create a button to load CSV file
 load_button = tk.Button(root, text="Load CSV File", command=load_csv)
