@@ -1,12 +1,16 @@
+################################
+# This file creates a GUI interface that allows the user to
+# select a CSV file, and plot selected columns within the CSV
+# in order to analyze trends in the data for data review
+################################
 import tkinter as tk
 from tkinter import filedialog, messagebox, StringVar, Listbox, MULTIPLE
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-
 # Function to load the CSV and create dropdowns and listbox for columns
 def load_csv():
-    # Ask the user to select a CSV file
+    # Asks the user to select a CSV file
     clear_widgets()
     file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
     
@@ -63,9 +67,8 @@ def plot_selected_columns():
     
     if time_col in data.columns and all(col in data.columns for col in selected_data_cols):
         # Create a plotly figure
-        print(displayIndivid)
-        if displayIndivid == 0:
-            
+        if displayIndivid.get() == 0:
+            #Displays all graphs together
             fig = go.Figure()
 
             # Add each selected data column as a trace to the plot
@@ -74,22 +77,28 @@ def plot_selected_columns():
 
             # Update layout with titles and axis labels
             fig.update_layout(
-                title=f"Selected Columns vs {time_col}",
-                xaxis_title=time_col,
+                title=f"Selected Columns vs Time",
+                xaxis_title="Time (ms)",
                 yaxis_title="Values",
                 showlegend=True
             )
-            
-        elif displayIndivid == 1:
-            fig = make_subplots(rows = len(selected_data_cols),cols = 1)
+            fig.show()
+        elif displayIndivid.get() == 1:
+            #Displays graphs separately
+            subtitles = [f"{col} vs Time (ms)" for col in selected_data_cols]
+            fig = make_subplots(rows=len(selected_data_cols), cols=1, 
+                                subplot_titles=subtitles)
             rowCounter = 1
+            #Prints subplots and adds titles, xlabels, and ylabels to them
             for col in selected_data_cols:
-                fig.add_trace(go.Scatter(x=data[time_col],y = data[col]),row = rowCounter,col = 1)
+                fig.add_trace(go.Scatter(x=data[time_col],y = data[col], name = selected_data_cols[rowCounter - 1]),row = rowCounter,col = 1 )
+                fig.update_yaxes(title_text= selected_data_cols[rowCounter - 1] , row = rowCounter, col=1)
+                fig.update_xaxes(title_text= "Time (ms)" , row = rowCounter, col=1)
                 rowCounter += 1
-            fig.update_layout(height = rowCounter * 300, width = 800, title = "Individually plotted data")
+            fig.update_layout(height = rowCounter * 300, width = 800, title_text=f"Selected Columns vs Time", showlegend=True)
 
             # Show the plot in the default browser
-        fig.show()
+            fig.show()
     else:
         messagebox.showerror("Error", "Invalid column selection.")
 
@@ -101,9 +110,6 @@ root.geometry("600x500")
 # Initialize variables
 selected_time_column = StringVar(root)
 data_listbox = Listbox(root, selectmode=MULTIPLE, height=10, width=50)
-
-
-
 
 # Create a button to load CSV file
 load_button = tk.Button(root, text="Load CSV File", command=load_csv)
